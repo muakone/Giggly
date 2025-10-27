@@ -1,7 +1,12 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import React from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const MOCK_TX = [
@@ -16,9 +21,23 @@ export default function Wallet() {
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
       <ThemedView style={{ flex: 1, padding: 16 }}>
-        <ThemedText type="title" style={{ marginBottom: 12 }}>
-          Wallet
-        </ThemedText>
+        <View style={styles.topRow}>
+          <ThemedText type="title">Wallet</ThemedText>
+          <View style={{ flexDirection: "row" }}>
+            <TouchableOpacity
+              style={styles.smallBtn}
+              onPress={() => alert("Top up (UI-only)")}
+            >
+              <Text style={styles.smallBtnText}>Top up</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.smallBtn, { marginLeft: 8 }]}
+              onPress={() => alert("Withdraw (UI-only)")}
+            >
+              <Text style={styles.smallBtnText}>Withdraw</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         <View style={styles.cardHighlight}>
           <Text style={styles.balance}>₦{balance.toLocaleString()}</Text>
@@ -71,4 +90,16 @@ const styles = StyleSheet.create({
   txLabel: { fontWeight: "700" },
   txDate: { color: "#64748b", marginTop: 4 },
   txAmount: { fontWeight: "800" },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  smallBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "#f1f5f9",
+    borderRadius: 8,
+  },
+  smallBtnText: { color: "#0a7ea4", fontWeight: "700" },
 });

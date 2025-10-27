@@ -2,12 +2,16 @@ import { Tabs } from "expo-router";
 import React from "react";
 
 import { HapticTab } from "@/components/haptic-tab";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
+
+  const bg = Colors.light.background;
 
   return (
     <Tabs
@@ -17,41 +21,61 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarShowLabel: true,
-        // semi-floating, blended tab bar
+        // grounded bottom tab bar: anchored to bottom:0, white bg and only
+        // top corners rounded so it visually rests on the device bottom.
         tabBarStyle: {
           position: "absolute",
-          left: 12,
-          right: 12,
-          bottom: 12,
-          height: 66,
-          borderRadius: 16,
-          backgroundColor: "#ffffffee",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 64 + (insets.bottom ?? 0),
+          // round only the top corners
+          borderTopLeftRadius: 18,
+          borderTopRightRadius: 18,
+          borderBottomLeftRadius: 0,
+          borderBottomRightRadius: 0,
+          backgroundColor: bg,
+          borderTopWidth: 1,
+          borderTopColor: "rgba(10,126,164,0.06)",
           shadowColor: "#000",
-          shadowOpacity: 0.06,
-          shadowRadius: 10,
-          elevation: 8,
-          borderTopWidth: 0,
+          shadowOpacity: 0.04,
+          shadowRadius: 6,
+          elevation: 6,
+          paddingBottom: insets.bottom ?? 12,
+          alignItems: "center",
         },
+        tabBarLabelStyle: { fontWeight: "700" },
+        tabBarActiveBackgroundColor: "transparent",
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size ?? 22} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="post"
+        name="inbox"
         options={{
-          title: "Post",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="plus.circle.fill" color={color} />
+          title: "Inbox",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="mail" size={size ?? 20} color={color} />
           ),
         }}
       />
+      <Tabs.Screen
+        name="wallet"
+        options={{
+          title: "Wallet",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="wallet" size={size ?? 20} color={color} />
+          ),
+        }}
+      />
+      {/* Post tab intentionally removed — Post screen is reachable from FAB or routes */}
     </Tabs>
   );
 }

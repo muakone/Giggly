@@ -1,5 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -33,16 +35,21 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+      <View
+        style={[
+          styles.headerWrap,
+          { backgroundColor: Colors[useColorScheme() ?? "light"].tint },
+        ]}
+      >
+        <SafeAreaView edges={["top"]} />
+        <View style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+          <Text style={styles.headerTitle}>Notifications</Text>
+        </View>
+      </View>
       <ThemedView style={{ flex: 1, padding: 16 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        <View style={styles.headerRow}>
           <ThemedText type="title">Notifications</ThemedText>
-          <TouchableOpacity onPress={clearAll}>
+          <TouchableOpacity onPress={clearAll} style={styles.clearBtn}>
             <Text style={{ color: "#6b7280", fontWeight: "700" }}>Clear</Text>
           </TouchableOpacity>
         </View>
@@ -76,6 +83,12 @@ export default function NotificationsScreen() {
 
 const styles = StyleSheet.create({
   empty: { marginTop: 24, alignItems: "center" },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  clearBtn: { paddingHorizontal: 8, paddingVertical: 6 },
   row: { flexDirection: "row", paddingVertical: 12, alignItems: "center" },
   dot: {
     width: 10,
@@ -86,4 +99,10 @@ const styles = StyleSheet.create({
   },
   text: { fontSize: 14 },
   time: { color: "#94a3b8", marginTop: 6 },
+  headerWrap: {
+    // small top strip that matches the app's header tint
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+  },
+  headerTitle: { color: "#fff", fontSize: 16, fontWeight: "800" },
 });

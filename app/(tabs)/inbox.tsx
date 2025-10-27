@@ -1,3 +1,5 @@
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -15,12 +17,14 @@ export default function Inbox() {
   const [text, setText] = useState("");
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.inner}>
-        <Text style={styles.title}>Inbox</Text>
-        <Text style={styles.subtitle}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ThemedView style={styles.inner}>
+        <ThemedText type="title" style={styles.title}>
+          Inbox
+        </ThemedText>
+        <ThemedText type="default" style={styles.subtitle}>
           Messages and applicant chats (UI-only)
-        </Text>
+        </ThemedText>
 
         <FlatList
           data={messages}
@@ -52,6 +56,7 @@ export default function Inbox() {
             value={text}
             onChangeText={setText}
             placeholder="Type a message"
+            placeholderTextColor="#9ca3af"
           />
           <TouchableOpacity
             style={styles.send}
@@ -62,18 +67,18 @@ export default function Inbox() {
               }
             }}
           >
-            <Text style={{ color: "#fff" }}>Send</Text>
+            <Text style={{ color: "#fff", fontWeight: "700" }}>Send</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ThemedView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1 },
   inner: { padding: 18, flex: 1 },
-  title: { fontSize: 20, fontWeight: "800", marginBottom: 6 },
+  title: { marginBottom: 6 },
   subtitle: { color: "#6b7280" },
   msgRow: { flexDirection: "row", paddingVertical: 12, alignItems: "center" },
   avatar: {

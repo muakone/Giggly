@@ -12,8 +12,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import useGigs from "../../hooks/useGigs";
-import { useUserStore } from "../../store/useUserStore";
+import useGigs from "../hooks/useGigs";
+import { useUserStore } from "../store/useUserStore";
 
 export default function PostScreen() {
   const [title, setTitle] = useState("");
@@ -39,7 +39,7 @@ export default function PostScreen() {
       tags: tags.split(",").map((t) => t.trim()),
       description: desc || "Posted via UI-only composer",
       boosted: !!boosted,
-      image: image || require("../../assets/images/react-logo.png"),
+      image: image || require("../assets/images/react-logo.png"),
       contact: contact || undefined,
     };
 
@@ -133,9 +133,7 @@ export default function PostScreen() {
         >
           <TouchableOpacity
             style={styles.imagePicker}
-            onPress={() =>
-              setImage(require("../../assets/images/react-logo.png"))
-            }
+            onPress={() => setImage(require("../assets/images/react-logo.png"))}
           >
             <Text style={{ color: "#0f172a" }}>Add image</Text>
           </TouchableOpacity>
@@ -182,5 +180,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     marginBottom: 40,
+  },
+  imagePicker: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#fff",
   },
 });

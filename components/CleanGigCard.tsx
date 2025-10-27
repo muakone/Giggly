@@ -147,7 +147,7 @@ export default function CleanGigCard({
                         key={i}
                         style={[
                           styles.applicant,
-                          { left: i * -8, zIndex: 10 - i },
+                          { marginLeft: i === 0 ? 0 : -10, zIndex: 10 - i },
                         ]}
                       >
                         <Text style={styles.applicantText}>
@@ -156,7 +156,7 @@ export default function CleanGigCard({
                       </View>
                     ))}
                     {gig.applicants.length > 4 ? (
-                      <View style={[styles.applicant, { left: 4 * -8 }]}>
+                      <View style={[styles.applicant, { marginLeft: -10 }]}>
                         <Text style={styles.applicantText}>
                           +{gig.applicants.length - 4}
                         </Text>
@@ -172,7 +172,10 @@ export default function CleanGigCard({
                     accessibilityLabel={
                       gig.claimed ? "Claimed" : `Claim ${gig.title}`
                     }
-                    style={styles.claimButton}
+                    style={[
+                      styles.claimButton,
+                      gig.claimed ? styles.claimed : null,
+                    ]}
                     activeOpacity={0.8}
                   >
                     <Text style={styles.claimText}>
@@ -183,7 +186,7 @@ export default function CleanGigCard({
                   <TouchableOpacity
                     style={[
                       styles.bookmark,
-                      gig.bookmarked ? { backgroundColor: "#fff1f2" } : null,
+                      gig.bookmarked ? styles.bookmarked : null,
                     ]}
                     accessibilityRole="button"
                     onPress={onBookmark}
@@ -205,23 +208,25 @@ export default function CleanGigCard({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 12,
-    marginVertical: 8,
+    borderRadius: 14,
+    padding: 14,
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: "#eef3f7",
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 4,
   },
   row: {
     flexDirection: "row",
     alignItems: "flex-start",
   },
   image: {
-    width: 72,
-    height: 72,
-    borderRadius: 10,
-    marginRight: 12,
+    width: 78,
+    height: 78,
+    borderRadius: 12,
+    marginRight: 14,
     backgroundColor: "#eef2ff",
   },
   content: {
@@ -234,9 +239,9 @@ const styles = StyleSheet.create({
   },
   promoted: {
     backgroundColor: "#fff7ed",
-    borderRadius: 14,
+    borderRadius: 16,
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 6,
     marginRight: 8,
     borderWidth: 1,
     borderColor: "#ffedd5",
@@ -253,9 +258,9 @@ const styles = StyleSheet.create({
   },
   payoutWrap: {
     backgroundColor: "#0ea5a4",
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: 14,
   },
   payoutBoosted: {
     shadowColor: "#05b59b",
@@ -271,10 +276,10 @@ const styles = StyleSheet.create({
   },
   payoutGlow: {
     position: "absolute",
-    width: 72,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: "rgba(14,165,164,0.16)",
+    width: 80,
+    height: 44,
+    borderRadius: 16,
+    backgroundColor: "rgba(14,165,164,0.14)",
   },
   payout: {
     color: "#fff",
@@ -306,8 +311,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f4f6",
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 20,
-    marginRight: 6,
+    borderRadius: 18,
+    marginRight: 8,
   },
   tagText: {
     fontSize: 12,
@@ -319,15 +324,14 @@ const styles = StyleSheet.create({
   },
   applicantsRow: {
     marginRight: 12,
-    width: 64,
-    height: 32,
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "center",
   },
   applicant: {
-    position: "relative",
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: "#dbeafe",
     alignItems: "center",
     justifyContent: "center",
@@ -342,6 +346,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginRight: 8,
   },
+  claimed: { backgroundColor: "#94a3b8" },
   claimText: {
     color: "#fff",
     fontWeight: "600",
@@ -351,10 +356,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#fff",
     shadowColor: "#000",
-    shadowOpacity: 0.03,
+    shadowOpacity: 0.02,
     shadowRadius: 6,
     elevation: 1,
+    borderWidth: 1,
+    borderColor: "#eef3f7",
   },
+  bookmarked: { backgroundColor: "#fff1f2", borderColor: "#ffdde0" },
   // subtle card uplift for visual depth
   cardHighlight: {
     shadowColor: "#05b59b",

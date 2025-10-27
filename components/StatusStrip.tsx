@@ -1,3 +1,5 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import {
   FlatList,
@@ -67,6 +69,7 @@ function Avatar({ name, index }: { name: string; index: number }) {
 }
 
 export default function StatusStrip() {
+  const router = useRouter();
   return (
     <SafeAreaView
       style={{
@@ -83,13 +86,35 @@ export default function StatusStrip() {
             <Text style={localStyles.greeting}>Good afternoon</Text>
             <Text style={localStyles.hint}>Find quick gigs nearby</Text>
           </View>
-          <TouchableOpacity
-            style={localStyles.filterBox}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-          >
-            <Text style={{ color: "#fff", fontSize: 20 }}>≡</Text>
-          </TouchableOpacity>
+          <View style={localStyles.iconRow}>
+            <TouchableOpacity
+              onPress={() => router.push("/inbox")}
+              style={localStyles.iconBtn}
+            >
+              <Ionicons name="mail" size={20} color="#fff" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push("/wallet")}
+              style={localStyles.iconBtn}
+            >
+              <Ionicons name="wallet" size={20} color="#fff" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push("/notifications")}
+              style={localStyles.iconBtn}
+            >
+              <Ionicons name="notifications" size={20} color="#fff" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push("/profile")}
+              style={localStyles.iconBtn}
+            >
+              <Ionicons name="person" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={{ height: 12 }} />
@@ -167,5 +192,15 @@ const localStyles = StyleSheet.create({
     bottom: -8,
     height: 24,
     backgroundColor: Colors.light.tint,
+  },
+  iconRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 8,
+    backgroundColor: "rgba(255,255,255,0.12)",
   },
 });
