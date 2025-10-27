@@ -18,7 +18,7 @@ export default function GigDetail() {
   const params = useLocalSearchParams();
   const router = useRouter();
   const id = params.id as string;
-  const { getById, claimGig } = useGigs();
+  const { getById, claimGig, completeGig } = useGigs();
   const gig = getById(id) || null;
 
   const insets = useSafeAreaInsets();
@@ -107,21 +107,53 @@ export default function GigDetail() {
           { paddingBottom: Math.max(12, insets.bottom) },
         ]}
       >
-        <TouchableOpacity
-          style={[
-            styles.leftButton,
-            { backgroundColor: "#ff6fa3", marginRight: 8 },
-          ]}
-          onPress={() => {
-            // claim the gig via the shared hook
-            if (gig) {
-              claimGig(gig.id);
-              alert("Claimed (UI-only). Check your wallet for pending payout.");
-            }
-          }}
-        >
-          <Text style={{ color: "white", fontWeight: "700" }}>Apply</Text>
-        </TouchableOpacity>
+        {!gig?.claimed ? (
+          <TouchableOpacity
+            style={[
+              styles.leftButton,
+              { backgroundColor: "#ff6fa3", marginRight: 8 },
+            ]}
+            onPress={() => {
+              if (gig) {
+                claimGig(gig.id);
+                alert(
+                  "Claimed (UI-only). Check your wallet for pending payout."
+                );
+              }
+            }}
+          >
+            <Text style={{ color: "white", fontWeight: "700" }}>Apply</Text>
+          </TouchableOpacity>
+        ) : !gig?.completed ? (
+          <TouchableOpacity
+            style={[
+              styles.leftButton,
+              { backgroundColor: "#0ea5a4", marginRight: 8 },
+            ]}
+            onPress={() => {
+              if (gig) {
+                completeGig(gig.id);
+                alert("Marked done (UI-only). Awaiting approval.");
+              }
+            }}
+          >
+            <Text style={{ color: "white", fontWeight: "700" }}>Mark done</Text>
+          </TouchableOpacity>
+        ) : (
+          <View
+            style={[
+              styles.leftButton,
+              {
+                backgroundColor: "#94a3b8",
+                marginRight: 8,
+                alignItems: "center",
+                justifyContent: "center",
+              },
+            ]}
+          >
+            <Text style={{ color: "white", fontWeight: "700" }}>Completed</Text>
+          </View>
+        )}
 
         <TouchableOpacity
           style={[styles.rightButton, { backgroundColor: Colors.light.tint }]}

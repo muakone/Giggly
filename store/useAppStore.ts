@@ -1,4 +1,6 @@
 import * as Zustand from "zustand";
+import { supabase } from "../lib/supabase";
+import { useUserStore } from "./useUserStore";
 let create: any =
   (Zustand as any).default ?? (Zustand as any).create ?? Zustand;
 if (typeof create !== "function") {
@@ -16,6 +18,7 @@ type Gig = {
   image?: any;
   boosted?: boolean;
   claimed?: boolean;
+  completed?: boolean;
   bookmarked?: boolean;
   applicants?: string[];
 };
@@ -75,8 +78,55 @@ export const useAppStore: any = create((set: any, get: any) => ({
   notifications: [],
 
   // GIGS
-  addGig: (g: Partial<Gig>) => {
-    const built: Gig = {
+  addGig: async (g: Partial<Gig>) => {
+    // Try to persist to Supabase if configured, otherwise fall back to local store.
+    const user = useUserStore.getState().user;
+    const payload: any = {
+      title: g.title || "Untitled",
+      description: g.description || "",
+      payout: g.payout || "₦0",
+      location: g.location || (user?.phone ? "Nearby" : "Remote"),
+      tags: g.tags || ["General"],
+      boosted: !!g.boosted,
+      // created_at will be set by DB default if present
+      user_id: user?.id ?? null,
+    };
+
+    try {
+      if (supabase) {
+        const res = await supabase
+          .from("gigs")
+          .insert([payload])
+          .select()
+          .single();
+        if (!res.error && res.data) {
+          const row = res.data as any;
+          const built: Gig = {
+            id: row.id || String(Date.now()),
+            title: row.title,
+            payout: row.payout || payload.payout,
+            location: row.location,
+            tags: row.tags || payload.tags,
+            description: row.description,
+            createdAt: row.created_at || new Date().toISOString(),
+            image: g.image || require("../assets/images/react-logo.png"),
+            boosted: !!row.boosted,
+            claimed: false,
+            bookmarked: false,
+            applicants: [],
+          };
+          set((s: any) => ({ gigs: [built, ...s.gigs] }));
+          get().addNotification(`${built.title} posted`);
+          return built;
+        }
+      }
+    } catch (err) {
+      // fall through to local fallback
+      console.warn("Supabase insert failed, using local store", err);
+    }
+
+    // Local fallback
+    const builtLocal: Gig = {
       id: String(Date.now()),
       title: g.title || "Untitled",
       payout: g.payout || "₦0",
@@ -90,22 +140,74 @@ export const useAppStore: any = create((set: any, get: any) => ({
       bookmarked: false,
       applicants: [],
     };
-    set((s: any) => ({ gigs: [built, ...s.gigs] }));
+    set((s: any) => ({ gigs: [builtLocal, ...s.gigs] }));
     // notify
-    get().addNotification(`${built.title} posted`);
+    get().addNotification(`${builtLocal.title} posted (local)`);
+    return builtLocal;
   },
 
-  claimGig: (id: string) => {
+  claimGig: async (id: string) => {
     const gig = get().gigs.find((x: Gig) => x.id === id);
     if (!gig) return;
-    // toggle claimed state
+    const user = useUserStore.getState().user;
+
+    // optimistic UI: mark claimed locally first
     set((s: any) => ({
       gigs: s.gigs.map((g: Gig) => (g.id === id ? { ...g, claimed: true } : g)),
     }));
 
-    // create a pending transaction based on payout
+    // compute numeric amount (best-effort)
     const digits = Number((gig.payout || "").replace(/[^0-9]/g, "") || 0);
-    const tx: Transaction = {
+
+    // try persisting to Supabase: update gig.claimed and insert a transaction
+    try {
+      if (supabase) {
+        // update gig record
+        const upd = await supabase
+          .from("gigs")
+          .update({ claimed: true })
+          .eq("id", id)
+          .select()
+          .single();
+
+        // insert transaction row
+        const txPayload = {
+          gig_id: id,
+          label: `Claim: ${gig.title}`,
+          amount: digits,
+          actor_id: user?.id ?? null,
+          status: "pending",
+        } as any;
+
+        const txRes = await supabase
+          .from("transactions")
+          .insert([txPayload])
+          .select()
+          .single();
+
+        if (!txRes.error && txRes.data) {
+          const row: any = txRes.data;
+          const tx: Transaction = {
+            id: row.id || String(Date.now()),
+            gigId: id,
+            label: row.label || txPayload.label,
+            amount: Number(row.amount) || digits,
+            date: row.created_at || new Date().toISOString(),
+            status: row.status || "pending",
+          };
+          set((s: any) => ({ transactions: [tx, ...s.transactions] }));
+          get().addNotification(
+            `You claimed '${gig.title}' — ₦${digits.toLocaleString()}`
+          );
+          return tx;
+        }
+      }
+    } catch (err) {
+      console.warn("Supabase claim failed, falling back to local", err);
+    }
+
+    // Local fallback: create tx locally
+    const txLocal: Transaction = {
       id: String(Date.now()),
       gigId: gig.id,
       label: `Claim: ${gig.title}`,
@@ -113,12 +215,22 @@ export const useAppStore: any = create((set: any, get: any) => ({
       date: new Date().toISOString(),
       status: "pending",
     };
-
-    set((s: any) => ({ transactions: [tx, ...s.transactions] }));
-
+    set((s: any) => ({ transactions: [txLocal, ...s.transactions] }));
     get().addNotification(
-      `You claimed '${gig.title}' — ₦${digits.toLocaleString()}`
+      `You claimed '${gig.title}' — ₦${digits.toLocaleString()} (local)`
     );
+    return txLocal;
+  },
+
+  completeGig: (id: string) => {
+    const gig = get().gigs.find((x: Gig) => x.id === id);
+    if (!gig) return;
+    set((s: any) => ({
+      gigs: s.gigs.map((g: Gig) =>
+        g.id === id ? { ...g, completed: true } : g
+      ),
+    }));
+    get().addNotification(`Marked '${gig.title}' as completed`);
   },
 
   toggleBookmark: (id: string) =>
@@ -145,8 +257,35 @@ export const useAppStore: any = create((set: any, get: any) => ({
     set((s: any) => ({ transactions: [built, ...s.transactions] }));
   },
 
-  releasePending: (id?: string) => {
-    // mark a single tx or all pending as available
+  releasePending: async (id?: string) => {
+    const user = useUserStore.getState().user;
+    // try persist changes to Supabase first
+    try {
+      if (supabase) {
+        if (id) {
+          await supabase
+            .from("transactions")
+            .update({ status: "available" })
+            .eq("id", id);
+        } else {
+          // release all pending transactions for the current user
+          if (user && user.id) {
+            await supabase
+              .from("transactions")
+              .update({ status: "available" })
+              .eq("actor_id", user.id)
+              .eq("status", "pending");
+          }
+        }
+      }
+    } catch (err) {
+      console.warn(
+        "Supabase releasePending failed, falling back to local",
+        err
+      );
+    }
+
+    // always update local state so UI reflects payout immediately
     set((s: any) => ({
       transactions: s.transactions.map((t: Transaction) =>
         id
