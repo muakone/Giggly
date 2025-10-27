@@ -2,7 +2,8 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import React, { useState } from "react";
+import { useAppStore } from "@/store/useAppStore";
+import React from "react";
 import {
   FlatList,
   StyleSheet,
@@ -12,26 +13,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const MOCK_NOTIFS = [
-  {
-    id: "n1",
-    text: 'Your claim for "Flyer sharing" is pending release',
-    time: "2m",
-  },
-  { id: "n2", text: 'New gig near you: "Makeup artist needed"', time: "1h" },
-  {
-    id: "n3",
-    text: "Tip: Verify your profile to get priority invites",
-    time: "1d",
-  },
-];
-
 export default function NotificationsScreen() {
-  const [notifs, setNotifs] = useState(MOCK_NOTIFS);
-
-  function clearAll() {
-    setNotifs([]);
-  }
+  const notifications = useAppStore((s: any) => s.notifications || []);
+  const clearNotifications = useAppStore((s: any) => s.clearNotifications);
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
@@ -49,12 +33,15 @@ export default function NotificationsScreen() {
       <ThemedView style={{ flex: 1, padding: 16 }}>
         <View style={styles.headerRow}>
           <ThemedText type="title">Notifications</ThemedText>
-          <TouchableOpacity onPress={clearAll} style={styles.clearBtn}>
+          <TouchableOpacity
+            onPress={clearNotifications}
+            style={styles.clearBtn}
+          >
             <Text style={{ color: "#6b7280", fontWeight: "700" }}>Clear</Text>
           </TouchableOpacity>
         </View>
 
-        {notifs.length === 0 ? (
+        {notifications.length === 0 ? (
           <View style={styles.empty}>
             <Text style={{ color: "#64748b" }}>
               You&apos;re all caught up — no notifications
@@ -63,7 +50,7 @@ export default function NotificationsScreen() {
         ) : (
           <FlatList
             contentContainerStyle={{ marginTop: 12 }}
-            data={notifs}
+            data={notifications}
             keyExtractor={(i) => i.id}
             renderItem={({ item }) => (
               <View style={styles.row}>

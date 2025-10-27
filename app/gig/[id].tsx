@@ -1,7 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -19,7 +18,7 @@ export default function GigDetail() {
   const params = useLocalSearchParams();
   const router = useRouter();
   const id = params.id as string;
-  const { getById } = useGigs();
+  const { getById, claimGig } = useGigs();
   const gig = getById(id) || null;
 
   const insets = useSafeAreaInsets();
@@ -47,17 +46,11 @@ export default function GigDetail() {
 
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }}>
         <View style={{ marginTop: -40 }}>
-          {gig?.image ? (
-            <Image
-              source={gig.image}
-              style={styles.banner}
-              resizeMode="cover"
-            />
-          ) : (
-            <View
-              style={[styles.banner, { backgroundColor: Colors.light.tint }]}
-            />
-          )}
+          <View style={[styles.banner, { backgroundColor: Colors.light.tint }]}>
+            <Text style={styles.bannerLetter}>
+              {(gig?.title || "G").charAt(0).toUpperCase()}
+            </Text>
+          </View>
         </View>
 
         <Text style={styles.title}>{gig ? gig.title : `Gig #${id}`}</Text>
@@ -66,7 +59,7 @@ export default function GigDetail() {
         </Text>
 
         <View style={styles.tagsRow}>
-          {(gig?.tags || ["General"]).map((t) => (
+          {(gig?.tags || ["General"]).map((t: string) => (
             <View key={t} style={styles.tag}>
               <Text style={styles.tagText}>{t}</Text>
             </View>
@@ -119,7 +112,13 @@ export default function GigDetail() {
             styles.leftButton,
             { backgroundColor: "#ff6fa3", marginRight: 8 },
           ]}
-          onPress={() => alert("Apply (UI-only)")}
+          onPress={() => {
+            // claim the gig via the shared hook
+            if (gig) {
+              claimGig(gig.id);
+              alert("Claimed (UI-only). Check your wallet for pending payout.");
+            }
+          }}
         >
           <Text style={{ color: "white", fontWeight: "700" }}>Apply</Text>
         </TouchableOpacity>
@@ -173,6 +172,13 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   banner: { height: 220, borderRadius: 12, marginBottom: 16, width: "100%" },
+  bannerLetter: {
+    fontSize: 64,
+    fontWeight: "900",
+    color: "#fff",
+    textAlign: "center",
+    marginTop: 64,
+  },
   title: { fontSize: 20, fontWeight: "800", marginBottom: 6, color: "#071124" },
   meta: { color: "#6B7280", marginBottom: 12 },
   tagsRow: { flexDirection: "row", marginBottom: 12 },

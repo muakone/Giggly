@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   AccessibilityInfo,
   Animated,
-  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -79,7 +78,13 @@ export default function CleanGigCard({
         accessibilityLabel={`${gig.title}. ${gig.payout}. ${gig.location || "Nearby"}`}
       >
         <View style={styles.row}>
-          <Image source={gig.image} style={styles.image} />
+          <View
+            style={[styles.image, gig.boosted ? styles.imageBoosted : null]}
+          >
+            <Text style={styles.imageLetter}>
+              {(gig.title || "U").charAt(0).toUpperCase()}
+            </Text>
+          </View>
 
           <View style={styles.content}>
             <View style={styles.titleRow}>
@@ -228,7 +233,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginRight: 14,
     backgroundColor: "#eef2ff",
+    alignItems: "center",
+    justifyContent: "center",
   },
+  imageLetter: { fontSize: 24, fontWeight: "900", color: "#071124" },
+  imageBoosted: { backgroundColor: "#fff7ed" },
   content: {
     flex: 1,
   },

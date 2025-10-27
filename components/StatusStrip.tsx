@@ -1,3 +1,4 @@
+import { useAppStore } from "@/store/useAppStore";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
@@ -70,6 +71,13 @@ function Avatar({ name, index }: { name: string; index: number }) {
 
 export default function StatusStrip() {
   const router = useRouter();
+  const notifications = useAppStore((s: any) => s.notifications || []);
+  const transactions = useAppStore((s: any) => s.transactions || []);
+
+  const unreadCount = notifications.filter((n: any) => !n.read).length;
+  const pendingSum = transactions
+    .filter((t: any) => t.status === "pending")
+    .reduce((s: number, t: any) => s + (t.amount || 0), 0);
   return (
     <SafeAreaView
       style={{
@@ -92,6 +100,11 @@ export default function StatusStrip() {
               style={localStyles.iconBtn}
             >
               <Ionicons name="mail" size={20} color="#fff" />
+              {unreadCount > 0 ? (
+                <View style={localStyles.badge}>
+                  <Text style={localStyles.badgeText}>{unreadCount}</Text>
+                </View>
+              ) : null}
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -99,6 +112,13 @@ export default function StatusStrip() {
               style={localStyles.iconBtn}
             >
               <Ionicons name="wallet" size={20} color="#fff" />
+              {pendingSum > 0 ? (
+                <View style={localStyles.badgeSmall}>
+                  <Text style={localStyles.badgeTextSmall}>
+                    ₦{pendingSum.toLocaleString()}
+                  </Text>
+                </View>
+              ) : null}
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -203,4 +223,29 @@ const localStyles = StyleSheet.create({
     marginLeft: 8,
     backgroundColor: "rgba(255,255,255,0.12)",
   },
+  badge: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    minWidth: 20,
+    paddingHorizontal: 6,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#ff4757",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeText: { color: "#fff", fontSize: 11, fontWeight: "800" },
+  badgeSmall: {
+    position: "absolute",
+    top: -6,
+    right: -8,
+    paddingHorizontal: 6,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeTextSmall: { color: "#fff", fontSize: 10, fontWeight: "700" },
 });

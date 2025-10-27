@@ -1,5 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { useAppStore } from "@/store/useAppStore";
+import React from "react";
 import {
   FlatList,
   StyleSheet,
@@ -9,14 +11,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const MOCK_TX = [
-  { id: "t1", label: "Gig: Flyer sharing", amount: 35000, date: "Today" },
-  { id: "t2", label: "Gig: Dog sitter", amount: 5000, date: "Yesterday" },
-  { id: "t3", label: "Gig: Data entry", amount: 2000, date: "2d ago" },
-];
-
 export default function Wallet() {
-  const balance = MOCK_TX.reduce((s, t) => s + t.amount, 0);
+  const transactions = useAppStore((s: any) => s.transactions || []);
+  const getBalance = useAppStore((s: any) => s.getBalance);
+  const releasePending = useAppStore((s: any) => s.releasePending);
+
+  const balance = getBalance();
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
@@ -44,20 +44,42 @@ export default function Wallet() {
           <Text style={styles.note}>Available balance</Text>
         </View>
 
+        <View
+          style={{
+            marginTop: 12,
+            flexDirection: "row",
+            justifyContent: "flex-end",
+          }}
+        >
+          <TouchableOpacity
+            style={styles.smallBtn}
+            onPress={() => releasePending()}
+          >
+            <Text style={styles.smallBtnText}>Release pending</Text>
+          </TouchableOpacity>
+        </View>
+
         <ThemedText type="defaultSemiBold" style={{ marginTop: 18 }}>
           Recent activity
         </ThemedText>
         <FlatList
-          data={MOCK_TX}
+          data={transactions}
           keyExtractor={(i) => i.id}
           style={{ marginTop: 12 }}
           renderItem={({ item }) => (
             <View style={styles.txRow}>
               <View>
                 <Text style={styles.txLabel}>{item.label}</Text>
-                <Text style={styles.txDate}>{item.date}</Text>
+                <Text style={styles.txDate}>
+                  {new Date(item.date).toLocaleString()}
+                </Text>
               </View>
-              <Text style={styles.txAmount}>
+              <Text
+                style={[
+                  styles.txAmount,
+                  { color: item.status === "pending" ? "#94a3b8" : "#0f172a" },
+                ]}
+              >
                 ₦{item.amount.toLocaleString()}
               </Text>
             </View>

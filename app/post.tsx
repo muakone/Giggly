@@ -45,7 +45,8 @@ export default function PostScreen() {
 
     addGig(newGig as any);
     Alert.alert("Posted", "Your gig was created (UI-only)");
-    router.back();
+    // navigate to home so the new gig is visible immediately
+    router.replace("/");
   }
 
   return (
